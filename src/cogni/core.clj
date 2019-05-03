@@ -9,10 +9,23 @@
 (def routes
   (route/expand-routes #{["/hello" :get hello-world :route-name :hello]}))
 
-(defn create-server []
-  (http/create-server {::http/routes routes
-                       ::http/type :jetty
-                       ::http/port 8890}))
+(def service-map
+  {::http/routes routes
+   ::http/type :jetty
+   ::http/port 8890})
 
-(defn start []
-  (http/start (create-server)))
+(defonce server (atom nil))
+
+(defn start-dev []
+  (let [new-server (-> service-map
+                       (assoc ::http/join? false)
+                       http/create-server
+                       http/start)]
+    (reset! server new-server)))
+
+(defn stop-dev []
+  (http/stop @server))
+
+(defn restart []
+  (stop-dev)
+  (start-dev))
