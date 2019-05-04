@@ -1,0 +1,3 @@
+{:ig/system {:http/handler {:port 8890
+                            :join? #profile {:development false
+                                             :default true}}}}

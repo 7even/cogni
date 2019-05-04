@@ -1,6 +1,16 @@
 (ns cogni.core
-  (:require [io.pedestal.http :as http]
+  (:require [aero.core :as aero]
+            [clojure.java.io :refer [resource]]
+            [integrant.core :as ig]
+            [io.pedestal.http :as http]
             [io.pedestal.http.route :as route]))
+
+(defn config
+  ([] (config :development))
+  ([profile]
+   (-> "config.edn"
+       resource
+       (aero/read-config {:profile profile}))))
 
 (defn hello-world [request]
   {:status 200
@@ -11,21 +21,16 @@
 
 (def service-map
   {::http/routes routes
-   ::http/type :jetty
-   ::http/port 8890})
+   ::http/type :jetty})
 
-(defonce server (atom nil))
+(defmethod ig/init-key :http/handler [_ {:keys [port join?]}]
+  (println ";; Starting HTTP handler")
+  (-> service-map
+      (assoc ::http/port port
+             ::http/join? join?)
+      http/create-server
+      http/start))
 
-(defn start-dev []
-  (let [new-server (-> service-map
-                       (assoc ::http/join? false)
-                       http/create-server
-                       http/start)]
-    (reset! server new-server)))
-
-(defn stop-dev []
-  (http/stop @server))
-
-(defn restart []
-  (stop-dev)
-  (start-dev))
+(defmethod ig/halt-key! :http/handler [_ server]
+  (println ";; Stopping HTTP handler")
+  (http/stop server))
