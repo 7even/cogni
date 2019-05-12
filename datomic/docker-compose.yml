@@ -8,3 +8,6 @@ services:
     environment:
       - ADMIN_PASSWORD=admin
       - DATOMIC_PASSWORD=datomic
+    volumes:
+      - ./data:/data
+      - ./log:/log

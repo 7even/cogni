@@ -1,2 +1,4 @@
 /.nrepl-history
 /.nrepl-port
+/datomic/data
+/datomic/log
