@@ -1,0 +1,10 @@
+version: '3'
+
+services:
+  transactor:
+    image: akiel/datomic-free
+    ports:
+      - 4334-4336:4334-4336
+    environment:
+      - ADMIN_PASSWORD=admin
+      - DATOMIC_PASSWORD=datomic

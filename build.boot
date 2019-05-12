@@ -12,7 +12,10 @@
                           ;; HTTP
                           [io.pedestal/pedestal.service "0.5.5"]
                           [io.pedestal/pedestal.route "0.5.5"]
-                          [io.pedestal/pedestal.jetty "0.5.5"]])
+                          [io.pedestal/pedestal.jetty "0.5.5"]
+
+                          ;; Datomic
+                          [com.datomic/datomic-free "0.9.5697"]])
 
 (task-options!
  repl {:init-ns 'user})
