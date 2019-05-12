@@ -14,7 +14,6 @@
     :db/ident :purchase/name
     :db/valueType :db.type/string
     :db/cardinality :db.cardinality/one
-    :db/doc "The name of the purchase"
-    :db.install/_attribute :db.part/db}])
+    :db/doc "The name of the purchase"}])
 
 (d/transact conn schema)
