@@ -1,6 +1,7 @@
 (ns cogni.core
   (:require [aero.core :as aero]
             [clojure.java.io :refer [resource]]
+            [cogni.db :as db]
             [integrant.core :as ig]
             [io.pedestal.http :as http]
             [io.pedestal.http.route :as route]))
@@ -22,6 +23,10 @@
 (def service-map
   {::http/routes routes
    ::http/type :jetty})
+
+(defmethod ig/init-key :datomic/client [_ {:keys [uri]}]
+  (println ";; Starting Datomic client")
+  (db/setup-db uri))
 
 (defmethod ig/init-key :http/handler [_ {:keys [port join?]}]
   (println ";; Starting HTTP handler")

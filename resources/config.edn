@@ -1,3 +1,4 @@
-{:ig/system {:http/handler {:port 8890
+{:ig/system {:datomic/client {:uri "datomic:free://localhost:4334/cogni?password=datomic"}
+             :http/handler {:port 8890
                             :join? #profile {:development false
                                              :default true}}}}

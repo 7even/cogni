@@ -1,19 +1,16 @@
 (ns cogni.db
-  (:require [datomic.api :as d]))
-
-(def uri
-  "datomic:free://localhost:4334/cogni?password=datomic")
-
-(d/create-database uri)
-
-(def conn
-  (d/connect uri))
+  (:require [clojure.edn :as edn]
+            [clojure.java.io :refer [resource]]
+            [datomic.api :as d]))
 
 (def schema
-  [{:db/id #db/id[:db.part/db]
-    :db/ident :purchase/name
-    :db/valueType :db.type/string
-    :db/cardinality :db.cardinality/one
-    :db/doc "The name of the purchase"}])
+  (->> "schema.edn"
+       resource
+       slurp
+       (edn/read-string {:readers {'db/id datomic.db/id-literal}})))
 
-(d/transact conn schema)
+(defn setup-db [uri]
+  (d/create-database uri)
+  (let [conn (d/connect uri)]
+    (d/transact conn schema)
+    conn))
