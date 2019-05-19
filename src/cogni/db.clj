@@ -16,6 +16,14 @@
       conn)
     (d/connect uri)))
 
+;;; Pedestal interceptor
+(defn attach-database [db-conn]
+  {:name ::attach-database
+   :enter (fn [context]
+            (-> context
+                (assoc-in [:request ::conn] db-conn)
+                (assoc-in [:request ::value] (d/db db-conn))))})
+
 (comment
   ;; check if schema is present
   (d/q '[:find ?e
