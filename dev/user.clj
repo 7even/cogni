@@ -8,4 +8,7 @@
 (defn system []
   integrant.repl.state/system)
 
+(defn db-conn []
+  (:datomic/client (system)))
+
 (def reset integrant.repl/reset)
