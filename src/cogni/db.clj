@@ -10,10 +10,11 @@
        (edn/read-string {:readers {'db/id datomic.db/id-literal}})))
 
 (defn setup-db [uri]
-  (when (d/create-database uri)
+  (if (d/create-database uri)
     (let [conn (d/connect uri)]
       @(d/transact conn schema)
-      conn)))
+      conn)
+    (d/connect uri)))
 
 (comment
   ;; check if schema is present
