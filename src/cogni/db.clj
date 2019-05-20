@@ -35,6 +35,10 @@
   (d/transact db-conn
               [{:purchase/name name}]))
 
+(defn retract-purchase [db-conn name]
+  (d/transact db-conn
+              [[:db/retractEntity [:purchase/name name]]]))
+
 (comment
   ;; check if schema is present
   (d/q '[:find ?e

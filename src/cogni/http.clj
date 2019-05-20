@@ -16,17 +16,22 @@
                :added-at added-at}))
        http/edn-response))
 
-(defn add-purchase [{:keys [::db/conn body] :as req}]
+(defn add-purchase [{:keys [::db/conn body]}]
   (let [params (-> body slurp edn/read-string)
         name (:name params)]
     (db/add-purchase conn name)
     {:status 201}))
 
+(defn retract-purchase [{:keys [::db/conn] {:keys [name]} :path-params}]
+  (db/retract-purchase conn name)
+  {:status 204})
+
 (defn routes [db]
   (route/expand-routes
    #{["/hello" :get hello-world :route-name :hello]
      ["/purchases" :get [(db/attach-database db) list-purchases] :route-name :purchases]
-     ["/purchases" :post [(db/attach-database db) add-purchase] :route-name :add-purchase]}))
+     ["/purchases" :post [(db/attach-database db) add-purchase] :route-name :add-purchase]
+     ["/purchases/:name" :delete [(db/attach-database db) retract-purchase] :route-name :retract-purchase]}))
 
 (defn start [db port join?]
   (-> {::http/routes (routes db)
