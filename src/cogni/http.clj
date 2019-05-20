@@ -1,5 +1,6 @@
 (ns cogni.http
-  (:require [cogni.db :as db]
+  (:require [clojure.edn :as edn]
+            [cogni.db :as db]
             [io.pedestal.http :as http]
             [io.pedestal.http.route :as route]))
 
@@ -15,10 +16,17 @@
                :added-at added-at}))
        http/edn-response))
 
+(defn add-purchase [{:keys [::db/conn body] :as req}]
+  (let [params (-> body slurp edn/read-string)
+        name (:name params)]
+    (db/add-purchase conn name)
+    {:status 201}))
+
 (defn routes [db]
   (route/expand-routes
    #{["/hello" :get hello-world :route-name :hello]
-     ["/purchases" :get [(db/attach-database db) list-purchases] :route-name :purchases]}))
+     ["/purchases" :get [(db/attach-database db) list-purchases] :route-name :purchases]
+     ["/purchases" :post [(db/attach-database db) add-purchase] :route-name :add-purchase]}))
 
 (defn start [db port join?]
   (-> {::http/routes (routes db)

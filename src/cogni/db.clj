@@ -31,6 +31,10 @@
          [?tx :db/txInstant ?added-at]]
        db))
 
+(defn add-purchase [db-conn name]
+  (d/transact db-conn
+              [{:purchase/name name}]))
+
 (comment
   ;; check if schema is present
   (d/q '[:find ?e
