@@ -24,6 +24,13 @@
                 (assoc-in [:request ::conn] db-conn)
                 (assoc-in [:request ::value] (d/db db-conn))))})
 
+(defn get-purchases [db]
+  (d/q '[:find ?e ?name ?added-at
+         :where
+         [?e :purchase/name ?name ?tx]
+         [?tx :db/txInstant ?added-at]]
+       db))
+
 (comment
   ;; check if schema is present
   (d/q '[:find ?e
