@@ -2,6 +2,7 @@
   (:require [clojure.edn :as edn]
             [cogni.db :as db]
             [io.pedestal.http :as http]
+            [io.pedestal.http.body-params :refer [body-params]]
             [io.pedestal.http.route :as route]))
 
 (defn hello-world [request]
@@ -16,11 +17,9 @@
                :added-at added-at}))
        http/edn-response))
 
-(defn add-purchase [{:keys [::db/conn body]}]
-  (let [params (-> body slurp edn/read-string)
-        name (:name params)]
-    (db/add-purchase conn name)
-    {:status 201}))
+(defn add-purchase [{:keys [::db/conn] {:keys [name]} :edn-params}]
+  (db/add-purchase conn name)
+  {:status 201})
 
 (defn retract-purchase [{:keys [::db/conn] {:keys [name]} :path-params}]
   (db/retract-purchase conn name)
@@ -30,7 +29,7 @@
   (route/expand-routes
    #{["/hello" :get hello-world :route-name :hello]
      ["/purchases" :get [(db/attach-database db) list-purchases] :route-name :purchases]
-     ["/purchases" :post [(db/attach-database db) add-purchase] :route-name :add-purchase]
+     ["/purchases" :post [(body-params) (db/attach-database db) add-purchase] :route-name :add-purchase]
      ["/purchases/:name" :delete [(db/attach-database db) retract-purchase] :route-name :retract-purchase]}))
 
 (defn start [db port join?]
