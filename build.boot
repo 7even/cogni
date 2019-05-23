@@ -1,4 +1,4 @@
-(set-env! :source-paths #{"src"}
+(set-env! :source-paths #{"src/clj"}
           :resource-paths #{"resources"}
           :dependencies '[[org.clojure/clojure "1.9.0"]
 
