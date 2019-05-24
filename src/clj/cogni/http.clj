@@ -2,6 +2,7 @@
   (:require [cogni.db :as db]
             [io.pedestal.http :as http]
             [io.pedestal.http.body-params :refer [body-params]]
+            [io.pedestal.http.cors :refer [allow-origin]]
             [io.pedestal.http.route :as route]))
 
 (defn list-purchases [{:keys [::db/value]}]
@@ -24,9 +25,14 @@
 
 (defn routes [db]
   (route/expand-routes
-   #{["/purchases" :get [(db/attach-database db) list-purchases] :route-name :purchases]
-     ["/purchases" :post [(body-params) (db/attach-database db) add-purchase] :route-name :add-purchase]
-     ["/purchases/:name" :delete [(db/attach-database db) retract-purchase] :route-name :retract-purchase]}))
+   #{["/purchases" :get [(allow-origin ["http://localhost:8891"])
+                         (db/attach-database db)
+                         list-purchases] :route-name :purchases]
+     ["/purchases" :post [(body-params)
+                          (db/attach-database db)
+                          add-purchase] :route-name :add-purchase]
+     ["/purchases/:name" :delete [(db/attach-database db)
+                                  retract-purchase] :route-name :retract-purchase]}))
 
 (defn start [db port join?]
   (-> {::http/routes (routes db)
