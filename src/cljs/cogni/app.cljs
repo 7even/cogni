@@ -35,7 +35,7 @@
    [:h2 "Purchases"]
    [:ul
     (for [purchase @(rf/subscribe [:purchases])]
-      [:li purchase])]])
+      [:li {:key purchase} purchase])]])
 
 (defn render []
   (ra/render [ui] (js/document.getElementById "root")))
