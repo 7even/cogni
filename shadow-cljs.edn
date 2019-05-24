@@ -1,6 +1,7 @@
 ;; shadow-cljs configuration
 {:source-paths ["src/cljs"]
  :dependencies [[re-frame "0.10.6"]
+                [day8.re-frame/http-fx "0.1.6"]
                 [cider/cider-nrepl "0.17.0"]]
  :builds {:dev {:target :browser
                 :modules {:main {:init-fn cogni.app/init}}
