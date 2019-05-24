@@ -2,3 +2,5 @@
 /.nrepl-port
 /datomic/data
 /datomic/log
+/.shadow-cljs
+/public/js
