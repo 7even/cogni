@@ -23,16 +23,17 @@
   (db/retract-purchase conn name)
   {:status 204})
 
+(defn add-interceptors [db & interceptors]
+  (vec (concat [(allow-origin ["http://localhost:8891"])
+                (body-params)
+                (db/attach-database db)]
+               interceptors)))
+
 (defn routes [db]
   (route/expand-routes
-   #{["/purchases" :get [(allow-origin ["http://localhost:8891"])
-                         (db/attach-database db)
-                         list-purchases] :route-name :purchases]
-     ["/purchases" :post [(body-params)
-                          (db/attach-database db)
-                          add-purchase] :route-name :add-purchase]
-     ["/purchases/:name" :delete [(db/attach-database db)
-                                  retract-purchase] :route-name :retract-purchase]}))
+   #{["/purchases" :get (add-interceptors db list-purchases) :route-name :purchases]
+     ["/purchases" :post (add-interceptors db add-purchase) :route-name :add-purchase]
+     ["/purchases/:name" :delete (add-interceptors db retract-purchase) :route-name :retract-purchase]}))
 
 (defn start [db port join?]
   (-> {::http/routes (routes db)
