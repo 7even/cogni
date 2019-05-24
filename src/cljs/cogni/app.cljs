@@ -6,7 +6,9 @@
 
 (rf/reg-event-db :initialize-db
                  (fn [_ _]
-                   {:purchases []}))
+                   {:purchases []
+                    :loading? true
+                    :error nil}))
 
 (rf/reg-event-fx :load-purchases
                  (fn [{db :db} _]
@@ -19,23 +21,42 @@
 
 (rf/reg-event-db :purchases-loaded
                  (fn [db [_ response]]
-                   (assoc db :purchases (map :name response))))
+                   (-> db
+                       (assoc :purchases (map :name response))
+                       (assoc :loading? false))))
 
 (rf/reg-event-db :purchases-failed-to-load
                  (fn [db [_ response]]
-                   (println "Failed to load purchases:" response)
-                   db))
+                   (-> db
+                       (assoc :error (str "Failed to load purchases: " response))
+                       (assoc :loading? false))))
 
 (rf/reg-sub :purchases
             (fn [db]
               (:purchases db)))
 
+(rf/reg-sub :loading?
+            (fn [db]
+              (:loading? db)))
+
+(rf/reg-sub :error
+            (fn [db]
+              (:error db)))
+
 (defn ui []
-  [:div
-   [:h2 "Purchases"]
-   [:ul
-    (for [purchase @(rf/subscribe [:purchases])]
-      [:li {:key purchase} purchase])]])
+  (cond
+    @(rf/subscribe [:loading?])
+    [:i "Loading..."]
+    (some? @(rf/subscribe [:error]))
+    [:i
+     {:style {:color "red"}}
+     @(rf/subscribe [:error])]
+    :else
+    [:div
+     [:h2 "Purchases"]
+     [:ul
+      (for [purchase @(rf/subscribe [:purchases])]
+        [:li {:key purchase} purchase])]]))
 
 (defn render []
   (ra/render [ui] (js/document.getElementById "root")))
