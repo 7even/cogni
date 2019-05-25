@@ -8,7 +8,7 @@
                  (fn [_ _]
                    {:purchases []
                     :loading? true
-                    :error nil}))
+                    :loading-error nil}))
 
 (rf/reg-event-fx :load-purchases
                  (fn [{db :db} _]
@@ -28,7 +28,7 @@
 (rf/reg-event-db :purchases-failed-to-load
                  (fn [db [_ response]]
                    (-> db
-                       (assoc :error (str "Failed to load purchases: " response))
+                       (assoc :loading-error (str "Failed to load purchases: " response))
                        (assoc :loading? false))))
 
 (rf/reg-sub :purchases
@@ -39,18 +39,18 @@
             (fn [db]
               (:loading? db)))
 
-(rf/reg-sub :error
+(rf/reg-sub :loading-error
             (fn [db]
-              (:error db)))
+              (:loading-error db)))
 
 (defn ui []
   (cond
     @(rf/subscribe [:loading?])
     [:i "Loading..."]
-    (some? @(rf/subscribe [:error]))
+    (some? @(rf/subscribe [:loading-error]))
     [:i
      {:style {:color "red"}}
-     @(rf/subscribe [:error])]
+     @(rf/subscribe [:loading-error])]
     :else
     [:div
      [:h2 "Purchases"]
