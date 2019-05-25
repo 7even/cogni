@@ -7,9 +7,8 @@
 
 (defn list-purchases [{:keys [::db/value]}]
   (->> (db/get-purchases value)
-       (map (fn [[id name added-at]]
-              {:id id
-               :name name
+       (map (fn [[name added-at]]
+              {:name name
                :added-at added-at}))
        http/edn-response))
 
