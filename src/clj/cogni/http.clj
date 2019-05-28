@@ -9,6 +9,7 @@
        (map (fn [[name added-at]]
               {:name name
                :added-at added-at}))
+       (sort-by :added-at)
        http/edn-response))
 
 (defn add-purchase [{:keys [::db/conn]
