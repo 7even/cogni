@@ -2,7 +2,6 @@
   (:require [cogni.db :as db]
             [io.pedestal.http :as http]
             [io.pedestal.http.body-params :refer [body-params]]
-            [io.pedestal.http.cors :refer [allow-origin]]
             [io.pedestal.http.route :as route]))
 
 (defn list-purchases [{:keys [::db/value]}]
@@ -23,8 +22,7 @@
   {:status 204})
 
 (defn add-interceptors [db & interceptors]
-  (vec (concat [(allow-origin ["http://localhost:8891"])
-                (body-params)
+  (vec (concat [(body-params)
                 (db/attach-database db)]
                interceptors)))
 
@@ -37,6 +35,7 @@
 (defn start [db port join?]
   (-> {::http/routes (routes db)
        ::http/port port
+       ::http/allowed-origins ["http://localhost:8891"]
        ::http/join? join?
        ::http/type :jetty}
       http/create-server
