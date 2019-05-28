@@ -9,7 +9,8 @@
                    {:purchases []
                     :new-purchase ""
                     :loading? true
-                    :loading-error nil}))
+                    :loading-error nil
+                    :duplication-error nil}))
 
 (rf/reg-event-fx :load-purchases
                  (fn [{db :db} _]
@@ -68,6 +69,14 @@
             (fn [db]
               (:loading-error db)))
 
+(rf/reg-sub :duplication-error
+            (fn []
+              [(rf/subscribe [:purchases])
+               (rf/subscribe [:new-purchase])])
+            (fn [[purchases new-purchase]]
+              (when (seq (filter #(= new-purchase %) purchases))
+                "This purchase is already on the list")))
+
 (defn ui []
   (cond
     @(rf/subscribe [:loading?])
@@ -86,7 +95,10 @@
               :value @(rf/subscribe [:new-purchase])
               :on-change #(rf/dispatch [:change-new-purchase
                                         (-> % .-target .-value)])}]
-     [:button {:on-click #(rf/dispatch [:add-purchase])} "Add"]]))
+     [:button {:on-click #(rf/dispatch [:add-purchase])} "Add"]
+     (when (some? @(rf/subscribe [:duplication-error]))
+       [:div {:style {:color "red"}}
+        @(rf/subscribe [:duplication-error])])]))
 
 (defn render []
   (ra/render [ui] (js/document.getElementById "root")))
