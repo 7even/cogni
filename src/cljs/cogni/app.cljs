@@ -36,7 +36,17 @@
                  (fn [db [_ new-purchase]]
                    (assoc db :new-purchase new-purchase)))
 
-(rf/reg-event-db :add-purchase
+(rf/reg-event-fx :add-purchase
+                 (fn [{db :db} _]
+                   {:http-xhrio {:method :post
+                                 :uri "http://localhost:8890/purchases"
+                                 :params {:name (:new-purchase db)}
+                                 :format (ajax/edn-request-format)
+                                 :response-format (ajax/edn-response-format)
+                                 :on-success [:purchase-added]
+                                 :on-failure [:purchase-failed-to-add]}}))
+
+(rf/reg-event-db :purchase-added
                  (fn [db _]
                    (-> db
                        (update :purchases conj (:new-purchase db))
