@@ -54,6 +54,22 @@
                        (update :purchases conj (:new-purchase db))
                        (assoc :new-purchase ""))))
 
+(rf/reg-event-fx :retract-purchase
+                 (fn [{db :db} [_ purchase-name]]
+                   {:http-xhrio {:method :delete
+                                 :uri (str "http://localhost:8890/purchases/" purchase-name)
+                                 :format (ajax/edn-request-format)
+                                 :response-format (ajax/edn-response-format)
+                                 :on-success [:purchase-retracted purchase-name]
+                                 :on-failure [:purchase-failed-to-retract]}}))
+
+(rf/reg-event-db :purchase-retracted
+                 (fn [db [_ deleted-purchase]]
+                   (update db :purchases (fn [purchases]
+                                           (->> purchases
+                                                (remove (partial = deleted-purchase))
+                                                vec)))))
+
 (rf/reg-sub :purchases
             (fn [db]
               (:purchases db)))
@@ -99,7 +115,16 @@
      [:h2 "Purchases"]
      [:ul
       (for [purchase @(rf/subscribe [:purchases])]
-        [:li {:key purchase} purchase])]
+        [:li
+         {:key purchase}
+         purchase
+         " "
+         [:a {:href "#"
+              :on-click (fn [e]
+                          (do
+                            (.preventDefault e)
+                            (rf/dispatch [:retract-purchase purchase])))}
+          "x"]])]
      [:input {:type :text
               :value @(rf/subscribe [:new-purchase])
               :on-change #(rf/dispatch [:change-new-purchase
