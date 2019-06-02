@@ -1,4 +1,5 @@
 (ns cogni.core
+  (:gen-class)
   (:require [aero.core :as aero]
             [clojure.java.io :refer [resource]]
             [cogni.db :as db]
@@ -26,3 +27,8 @@
 (defmethod ig/halt-key! :http/handler [_ server]
   (println ";; Stopping HTTP handler")
   (http/stop server))
+
+(defn -main []
+  (let [system-config (-> (config :production)
+                          :ig/system)]
+    (ig/init system-config)))

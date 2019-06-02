@@ -18,10 +18,21 @@
                           [com.datomic/datomic-free "0.9.5697"]])
 
 (task-options!
- repl {:init-ns 'user})
+ repl {:init-ns 'user}
+ aot {:namespace '#{cogni.core}}
+ jar {:file "cogni.jar"
+      :main 'cogni.core})
 
 (replace-task!
  [r repl]
  (fn [& xs]
    (merge-env! :source-paths #{"dev"})
    (apply r xs)))
+
+(deftask build
+  "Build a standalone application jar."
+  []
+  (comp (uber)
+        (aot)
+        (jar)
+        (target)))
