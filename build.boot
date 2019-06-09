@@ -1,4 +1,4 @@
-(set-env! :source-paths #{"src/clj"}
+(set-env! :source-paths #{"src/clj" "src/cljs"}
           :resource-paths #{"resources"}
           :dependencies '[[org.clojure/clojure "1.9.0"]
 
@@ -13,9 +13,15 @@
                           [io.pedestal/pedestal.service "0.5.5"]
                           [io.pedestal/pedestal.route "0.5.5"]
                           [io.pedestal/pedestal.jetty "0.5.5"]
+                          [hiccup "1.0.5"]
 
                           ;; Datomic
-                          [com.datomic/datomic-free "0.9.5697"]])
+                          [com.datomic/datomic-free "0.9.5697" :exclusions [com.google.guava/guava]]
+
+                          ;; Clojurescript
+                          [thheller/shadow-cljs "2.8.37"]
+                          [re-frame "0.10.6"]
+                          [day8.re-frame/http-fx "0.1.6"]])
 
 (task-options!
  repl {:init-ns 'user}

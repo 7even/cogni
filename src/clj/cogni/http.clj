@@ -1,8 +1,14 @@
 (ns cogni.http
   (:require [cogni.db :as db]
+            [cogni.html :as html]
             [io.pedestal.http :as http]
             [io.pedestal.http.body-params :refer [body-params]]
             [io.pedestal.http.route :as route]))
+
+(defn show-index [_]
+  {:status 200
+   :headers {"Content-Type" "text/html"}
+   :body html/page})
 
 (defn list-purchases [{:keys [::db/value]}]
   (->> (db/get-purchases value)
@@ -29,7 +35,8 @@
 
 (defn routes [db]
   (route/expand-routes
-   #{["/purchases" :get (add-interceptors db list-purchases) :route-name :purchases]
+   #{["/" :get show-index :route-name :index]
+     ["/purchases" :get (add-interceptors db list-purchases) :route-name :purchases]
      ["/purchases" :post (add-interceptors db add-purchase) :route-name :add-purchase]
      ["/purchases/:name" :delete (add-interceptors db retract-purchase) :route-name :retract-purchase]}))
 
@@ -37,6 +44,8 @@
   (-> {::http/routes (routes db)
        ::http/port port
        ::http/allowed-origins ["http://localhost:8891"]
+       ::http/file-path "public"
+       ::http/secure-headers nil
        ::http/join? join?
        ::http/type :jetty}
       http/create-server
