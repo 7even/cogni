@@ -23,6 +23,8 @@
                           [re-frame "0.10.6"]
                           [day8.re-frame/http-fx "0.1.6"]])
 
+(require '[shadow.cljs.devtools.api :as shadow])
+
 (task-options!
  repl {:init-ns 'user}
  aot {:namespace '#{cogni.core}}
@@ -42,3 +44,8 @@
         (aot)
         (jar)
         (target)))
+
+(deftask build-cljs
+  "Build a production release of frontend."
+  []
+  (shadow/release :dev))
