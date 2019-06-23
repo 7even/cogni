@@ -1,0 +1,21 @@
+version: '3'
+
+services:
+  app:
+    image: 7even/cogni
+    ports:
+      - 8890:8890
+    environment:
+      - DATOMIC_URI=datomic:free://transactor:4334/cogni?password=datomic
+    depends_on:
+      - transactor
+
+  transactor:
+    image: akiel/datomic-free
+    environment:
+      - ALT_HOST=transactor
+      - ADMIN_PASSWORD=admin
+      - DATOMIC_PASSWORD=datomic
+    volumes:
+      - ./data:/data
+      - ./log:/log
