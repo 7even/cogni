@@ -37,8 +37,8 @@
    (merge-env! :source-paths #{"dev"})
    (apply r xs)))
 
-(deftask build
-  "Build a standalone application jar."
+(deftask build-clj
+  "Build a production release of backend."
   []
   (comp (uber)
         (aot)
