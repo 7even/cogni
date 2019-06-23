@@ -1,6 +1,8 @@
 {:ig/system {:datomic/client {:uri #or [#env DATOMIC_URI
                                         "datomic:free://localhost:4334/cogni?password=datomic"]}
              :http/handler {:db #ig/ref :datomic/client
+                            :public-host #or [#env PUBLIC_HOST
+                                              "localhost:8890"]
                             :port 8890
                             :join? #profile {:development false
                                              :default true}}}}

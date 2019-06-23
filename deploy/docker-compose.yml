@@ -7,6 +7,7 @@ services:
       - 2000:2000
     environment:
       - DATOMIC_URI=datomic:free://transactor:4334/cogni?password=datomic
+      - PUBLIC_HOST=${PUBLIC_HOST:-localhost:2000}
     depends_on:
       - transactor
 

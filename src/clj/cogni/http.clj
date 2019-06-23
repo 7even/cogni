@@ -40,11 +40,11 @@
      ["/purchases" :post (add-interceptors db add-purchase) :route-name :add-purchase]
      ["/purchases/:name" :delete (add-interceptors db retract-purchase) :route-name :retract-purchase]}))
 
-(defn start [db port join?]
+(defn start [db public-host port join?]
   (-> {::http/routes (routes db)
        ::http/host "0.0.0.0"
        ::http/port port
-       ::http/allowed-origins ["http://localhost:8891"]
+       ::http/allowed-origins [(str "http://" public-host)]
        ::http/file-path "public"
        ::http/secure-headers nil
        ::http/join? join?

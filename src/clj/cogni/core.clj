@@ -20,9 +20,9 @@
   (println ";; Starting Datomic client")
   (db/setup-db uri))
 
-(defmethod ig/init-key :http/handler [_ {:keys [db port join?]}]
+(defmethod ig/init-key :http/handler [_ {:keys [db public-host port join?]}]
   (println ";; Starting HTTP handler")
-  (http/start db port join?))
+  (http/start db public-host port join?))
 
 (defmethod ig/halt-key! :http/handler [_ server]
   (println ";; Stopping HTTP handler")
