@@ -5,3 +5,5 @@
 !resources
 !shadow-cljs.edn
 !src
+!deploy/nginx.conf
+!deploy/run.sh

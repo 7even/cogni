@@ -4,7 +4,7 @@ services:
   app:
     image: 7even/cogni
     ports:
-      - 8890:8890
+      - 2000:2000
     environment:
       - DATOMIC_URI=datomic:free://transactor:4334/cogni?password=datomic
     depends_on:
