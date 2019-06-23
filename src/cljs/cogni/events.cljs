@@ -14,7 +14,7 @@
 (rf/reg-event-fx ::load-purchases
                  (fn [{db :db} _]
                    {:http-xhrio {:method :get
-                                 :uri "http://localhost:8890/purchases"
+                                 :uri "/purchases"
                                  :format (ajax/edn-request-format)
                                  :response-format (ajax/edn-response-format)
                                  :on-success [::purchases-loaded]
@@ -39,7 +39,7 @@
 (rf/reg-event-fx ::add-purchase
                  (fn [{db :db} _]
                    {:http-xhrio {:method :post
-                                 :uri "http://localhost:8890/purchases"
+                                 :uri "/purchases"
                                  :params {:name (:new-purchase db)}
                                  :format (ajax/edn-request-format)
                                  :response-format (ajax/edn-response-format)
@@ -55,7 +55,7 @@
 (rf/reg-event-fx ::retract-purchase
                  (fn [{db :db} [_ purchase-name]]
                    {:http-xhrio {:method :delete
-                                 :uri (str "http://localhost:8890/purchases/" purchase-name)
+                                 :uri (str "/purchases/" purchase-name)
                                  :format (ajax/edn-request-format)
                                  :response-format (ajax/edn-response-format)
                                  :on-success [::purchase-retracted purchase-name]
