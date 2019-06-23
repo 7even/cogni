@@ -1,0 +1,7 @@
+*
+!boot.properties
+!build.boot
+!package*.json
+!resources
+!shadow-cljs.edn
+!src

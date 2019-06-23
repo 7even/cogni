@@ -42,6 +42,7 @@
 
 (defn start [db port join?]
   (-> {::http/routes (routes db)
+       ::http/host "0.0.0.0"
        ::http/port port
        ::http/allowed-origins ["http://localhost:8891"]
        ::http/file-path "public"
