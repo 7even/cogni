@@ -1,5 +1,6 @@
 (ns cogni.http
-  (:require [cogni.db :as db]
+  (:require [clojure.string :as str]
+            [cogni.db :as db]
             [cogni.html :as html]
             [io.pedestal.http :as http]
             [io.pedestal.http.body-params :refer [body-params]]
@@ -40,12 +41,22 @@
      ["/purchases" :post (add-interceptors db add-purchase) :route-name :add-purchase]
      ["/purchases/:name" :delete (add-interceptors db retract-purchase) :route-name :retract-purchase]}))
 
+(def log-request
+  "Log the request's method and uri."
+  {:name ::log-request
+   :enter (fn [request]
+            (println (format "%s %s"
+                             (str/upper-case (name (get-in request [:request :request-method])))
+                             (get-in request [:request :uri])))
+            request)})
+
 (defn start [db public-host port join?]
   (-> {::http/routes (routes db)
        ::http/host "0.0.0.0"
        ::http/port port
        ::http/allowed-origins [(str "http://" public-host)]
        ::http/file-path "public"
+       ::http/request-logger log-request
        ::http/secure-headers nil
        ::http/join? join?
        ::http/type :jetty}
