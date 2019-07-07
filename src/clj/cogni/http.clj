@@ -30,7 +30,8 @@
   {:status 204})
 
 (defn add-interceptors [db & interceptors]
-  (vec (concat [(body-params)
+  (vec (concat [route/path-params-decoder
+                (body-params)
                 (db/attach-database db)]
                interceptors)))
 
