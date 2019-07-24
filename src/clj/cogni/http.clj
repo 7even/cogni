@@ -2,8 +2,10 @@
   (:require [clojure.string :as str]
             [cogni.db :as db]
             [cogni.html :as html]
+            [cogni.websocket :as websocket]
             [io.pedestal.http :as http]
             [io.pedestal.http.body-params :refer [body-params]]
+            [io.pedestal.http.jetty.websockets :as ws]
             [io.pedestal.http.route :as route]))
 
 (defn show-index [_]
@@ -60,7 +62,9 @@
        ::http/request-logger log-request
        ::http/secure-headers nil
        ::http/join? join?
-       ::http/type :jetty}
+       ::http/type :jetty
+       ::http/container-options {:context-configurator
+                                 #(ws/add-ws-endpoints % (websocket/ws-paths db))}}
       http/create-server
       http/start))
 

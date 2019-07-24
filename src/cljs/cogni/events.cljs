@@ -1,7 +1,23 @@
 (ns cogni.events
   (:require [re-frame.core :as rf]
             [ajax.edn :as ajax]
-            [day8.re-frame.http-fx]))
+            [day8.re-frame.http-fx]
+            [wscljs.client :as ws]))
+
+(def ws-connection (atom nil))
+
+(rf/reg-event-fx ::initialize-ws
+                 (fn [_ _]
+                   (println "Initializing WS connection")
+                   (reset! ws-connection
+                           (ws/create "ws://0.0.0.0:8890/ws"
+                                      {:on-open #(println "Connected")
+                                       :on-close #(println "Disconnected")
+                                       :on-message (fn [e]
+                                                     (let [data (cljs.reader/read-string (.-data e))]
+                                                       (println "Message from server:")
+                                                       (cljs.pprint/pprint data)))}))
+                   {}))
 
 (rf/reg-event-db ::initialize-db
                  (fn [_ _]
