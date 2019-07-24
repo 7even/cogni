@@ -25,6 +25,11 @@
     (when (.isOpen session)
       (send-to-ws channel {:text message}))))
 
+(defn broadcast [payload]
+  (doseq [[^Session session channel] @ws-clients]
+    (when (.isOpen session)
+      (send-to-ws channel payload))))
+
 (defn ws-paths [db]
   {"/ws" {:on-connect (ws/start-ws-connection (new-ws-client db))
           :on-text (fn [msg]
