@@ -16,7 +16,9 @@
                                        :on-message (fn [e]
                                                      (let [data (cljs.reader/read-string (.-data e))]
                                                        (println "Message from server:")
-                                                       (cljs.pprint/pprint data)))}))
+                                                       (cljs.pprint/pprint data)
+                                                       (rf/dispatch [::purchases-loaded
+                                                                     (:purchases data)])))}))
                    {}))
 
 (rf/reg-event-db ::initialize-db
@@ -27,25 +29,10 @@
                     :loading-error nil
                     :duplication-error nil}))
 
-(rf/reg-event-fx ::load-purchases
-                 (fn [{db :db} _]
-                   {:http-xhrio {:method :get
-                                 :uri "/purchases"
-                                 :format (ajax/edn-request-format)
-                                 :response-format (ajax/edn-response-format)
-                                 :on-success [::purchases-loaded]
-                                 :on-failure [::purchases-failed-to-load]}}))
-
 (rf/reg-event-db ::purchases-loaded
                  (fn [db [_ response]]
                    (-> db
                        (assoc :purchases (mapv :name response))
-                       (assoc :loading? false))))
-
-(rf/reg-event-db ::purchases-failed-to-load
-                 (fn [db [_ response]]
-                   (-> db
-                       (assoc :loading-error (str "Failed to load purchases: " response))
                        (assoc :loading? false))))
 
 (rf/reg-event-db ::change-new-purchase

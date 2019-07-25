@@ -10,6 +10,5 @@
 
 (defn init []
   (rf/dispatch-sync [::events/initialize-db])
-  (rf/dispatch-sync [::events/load-purchases])
   (rf/dispatch-sync [::events/initialize-ws])
   (render))
