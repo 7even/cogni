@@ -2,9 +2,10 @@
   (:require [re-frame.core :as rf]
             [ajax.edn :as ajax]
             [day8.re-frame.http-fx]
-            [wscljs.client :as ws]))
+            [wscljs.client :as ws]
+            [wscljs.format :as fmt]))
 
-(def ws-connection (atom nil))
+(defonce ws-connection (atom nil))
 
 (rf/reg-event-fx ::initialize-ws
                  (fn [_ _]
@@ -20,6 +21,10 @@
                                                        (rf/dispatch [::purchases-loaded
                                                                      (:purchases data)])))}))
                    {}))
+
+(rf/reg-fx :send-to-ws
+           (fn [payload]
+             (ws/send @ws-connection payload fmt/edn)))
 
 (rf/reg-event-db ::initialize-db
                  (fn [_ _]
@@ -47,7 +52,9 @@
                                  :format (ajax/edn-request-format)
                                  :response-format (ajax/edn-response-format)
                                  :on-success [::purchase-added]
-                                 :on-failure [::purchase-failed-to-add]}}))
+                                 :on-failure [::purchase-failed-to-add]}
+                    :send-to-ws {:event :add-purchase
+                                 :data {:name (:new-purchase db)}}}))
 
 (rf/reg-event-db ::purchase-added
                  (fn [db _]
@@ -62,7 +69,9 @@
                                  :format (ajax/edn-request-format)
                                  :response-format (ajax/edn-response-format)
                                  :on-success [::purchase-retracted purchase-name]
-                                 :on-failure [::purchase-failed-to-retract]}}))
+                                 :on-failure [::purchase-failed-to-retract]}
+                    :send-to-ws {:event :retract-purchase
+                                 :data {:name purchase-name}}}))
 
 (rf/reg-event-db ::purchase-retracted
                  (fn [db [_ deleted-purchase]]
