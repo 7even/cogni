@@ -10,7 +10,7 @@
                  (fn [_ _]
                    (println "Initializing WS connection")
                    (reset! ws-connection
-                           (ws/create (str "ws://" (-> js/window .-location .-host) "/ws")
+                           (ws/create (str "ws://" (.. js/window -location -host) "/ws")
                                       {:on-open #(println "Connected")
                                        :on-close #(println "Disconnected")
                                        :on-message (fn [e]

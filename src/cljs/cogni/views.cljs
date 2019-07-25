@@ -11,9 +11,8 @@
 
 (defn purchase-row [purchase]
   (letfn [(on-click [e]
-            (do
-              (.preventDefault e)
-              (rf/dispatch [::events/retract-purchase purchase])))]
+            (.preventDefault e)
+            (rf/dispatch [::events/retract-purchase purchase]))]
     [:li.list-group-item
      purchase
      " "
@@ -25,7 +24,7 @@
   [:input.form-control {:type :text
                         :value @(rf/subscribe [::subs/new-purchase])
                         :on-change #(rf/dispatch [::events/change-new-purchase
-                                                  (-> % .-target .-value)])}])
+                                                  (.. % -target -value)])}])
 
 (defn add-purchase-button []
   [:div.input-group-append
