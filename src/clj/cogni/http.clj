@@ -59,7 +59,7 @@
        ::http/port port
        ::http/allowed-origins [(str "http://" public-host)]
        ::http/file-path "public"
-       ::http/request-logger log-request
+       ;; ::http/request-logger log-request
        ::http/secure-headers nil
        ::http/join? join?
        ::http/type :jetty
