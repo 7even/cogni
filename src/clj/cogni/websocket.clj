@@ -30,10 +30,17 @@
     (when (.isOpen session)
       (send-to-ws channel payload))))
 
+(defn- handle-client-event [db {:keys [event data]}]
+  (case event
+    :add-purchase (db/add-purchase db (:name data))
+    :retract-purchase (db/retract-purchase db (:name data))
+    (println "Unknown event" event "with payload" data)))
+
 (defn ws-paths [db]
   {"/ws" {:on-connect (ws/start-ws-connection (new-ws-client db))
-          :on-text (fn [msg]
-                     (println (str "A client sent - " msg)))
+          :on-text (fn [payload]
+                     (println "Client sent:" payload)
+                     (handle-client-event db (read-string payload)))
           :on-binary (fn [payload offset length]
                        (println "Binary Message!")
                        (clojure.pprint/pprint (:bytes payload)))

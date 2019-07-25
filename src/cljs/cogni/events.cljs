@@ -46,14 +46,7 @@
 
 (rf/reg-event-fx ::add-purchase
                  (fn [{db :db} _]
-                   {:http-xhrio {:method :post
-                                 :uri "/purchases"
-                                 :params {:name (:new-purchase db)}
-                                 :format (ajax/edn-request-format)
-                                 :response-format (ajax/edn-response-format)
-                                 :on-success [::purchase-added]
-                                 :on-failure [::purchase-failed-to-add]}
-                    :send-to-ws {:event :add-purchase
+                   {:send-to-ws {:event :add-purchase
                                  :data {:name (:new-purchase db)}}}))
 
 (rf/reg-event-db ::purchase-added
@@ -64,13 +57,7 @@
 
 (rf/reg-event-fx ::retract-purchase
                  (fn [{db :db} [_ purchase-name]]
-                   {:http-xhrio {:method :delete
-                                 :uri (str "/purchases/" purchase-name)
-                                 :format (ajax/edn-request-format)
-                                 :response-format (ajax/edn-response-format)
-                                 :on-success [::purchase-retracted purchase-name]
-                                 :on-failure [::purchase-failed-to-retract]}
-                    :send-to-ws {:event :retract-purchase
+                   {:send-to-ws {:event :retract-purchase
                                  :data {:name purchase-name}}}))
 
 (rf/reg-event-db ::purchase-retracted
