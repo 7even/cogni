@@ -7,6 +7,15 @@
 
 (defonce ws-connection (atom nil))
 
+(defn handle-server-event [{:keys [current-state event data]}]
+  (cond
+    (some? current-state) (case current-state
+                            :purchases (rf/dispatch [::purchases-loaded data]))
+    (some? event) (case event
+                    :purchase-added (rf/dispatch [::purchase-added (:name data)])
+                    :purchase-retracted (rf/dispatch [::purchase-retracted (:name data)]))
+    :else (println "Server sent something wrong.")))
+
 (rf/reg-event-fx ::initialize-ws
                  (fn [_ _]
                    (println "Initializing WS connection")
@@ -18,8 +27,7 @@
                                                      (let [data (cljs.reader/read-string (.-data e))]
                                                        (println "Message from server:")
                                                        (cljs.pprint/pprint data)
-                                                       (rf/dispatch [::purchases-loaded
-                                                                     (:purchases data)])))}))
+                                                       (handle-server-event data)))}))
                    {}))
 
 (rf/reg-fx :send-to-ws
@@ -35,9 +43,9 @@
                     :duplication-error nil}))
 
 (rf/reg-event-db ::purchases-loaded
-                 (fn [db [_ response]]
+                 (fn [db [_ purchases]]
                    (-> db
-                       (assoc :purchases (mapv :name response))
+                       (assoc :purchases (mapv :name purchases))
                        (assoc :loading? false))))
 
 (rf/reg-event-db ::change-new-purchase
@@ -50,10 +58,10 @@
                                  :data {:name (:new-purchase db)}}}))
 
 (rf/reg-event-db ::purchase-added
-                 (fn [db _]
-                   (-> db
-                       (update :purchases conj (:new-purchase db))
-                       (assoc :new-purchase ""))))
+                 (fn [db [_ added-purchase]]
+                   (cond-> db
+                     true (update :purchases conj added-purchase)
+                     (= added-purchase (:new-purchase db)) (assoc :new-purchase ""))))
 
 (rf/reg-event-fx ::retract-purchase
                  (fn [{db :db} [_ purchase-name]]

@@ -13,11 +13,12 @@
 (defn new-ws-client [db-conn]
   (fn [ws-session send-ch]
     (send-to-ws send-ch
-                {:purchases (->> (db/get-purchases (d/db db-conn))
-                                 (map (fn [[name added-at]]
-                                        {:name name
-                                         :added-at added-at}))
-                                 (sort-by :added-at))})
+                {:current-state :purchases
+                 :data (->> (db/get-purchases (d/db db-conn))
+                            (map (fn [[name added-at]]
+                                   {:name name
+                                    :added-at added-at}))
+                            (sort-by :added-at))})
     (swap! ws-clients assoc ws-session send-ch)))
 
 (defn send-message-to-all! [message]

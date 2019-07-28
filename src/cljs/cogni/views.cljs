@@ -12,8 +12,7 @@
 (defn purchase-row [purchase]
   (letfn [(on-click [e]
             (.preventDefault e)
-            (rf/dispatch [::events/retract-purchase purchase])
-            (rf/dispatch [::events/purchase-retracted purchase]))]
+            (rf/dispatch [::events/retract-purchase purchase]))]
     [:li.list-group-item
      purchase
      " "
@@ -30,8 +29,7 @@
 (defn add-purchase-button []
   [:div.input-group-append
    [:button.btn.btn-primary
-    {:on-click #(do (rf/dispatch [::events/add-purchase])
-                    (rf/dispatch [::events/purchase-added]))
+    {:on-click #(rf/dispatch [::events/add-purchase])
      :disabled @(rf/subscribe [::subs/new-purchase-invalid?])}
     "Add"]])
 
