@@ -2,6 +2,7 @@
   (:gen-class)
   (:require [aero.core :as aero]
             [clojure.java.io :refer [resource]]
+            [cogni.broadcaster :as broadcaster]
             [cogni.db :as db]
             [cogni.http :as http]
             [integrant.core :as ig]))
@@ -19,6 +20,15 @@
 (defmethod ig/init-key :datomic/client [_ {:keys [uri]}]
   (println ";; Starting Datomic client")
   (db/setup-db uri))
+
+(defmethod ig/init-key :events/broadcaster [_ {:keys [db]}]
+  (println ";; Starting events broadcaster")
+  (broadcaster/start-watcher db))
+
+(defmethod ig/halt-key! :events/broadcaster [_ {:keys [enabled db]}]
+  (println ";; Stopping events broadcaster")
+  (reset! enabled false)
+  (broadcaster/stop-watcher db))
 
 (defmethod ig/init-key :http/handler [_ {:keys [db public-host port join?]}]
   (println ";; Starting HTTP handler")

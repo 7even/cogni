@@ -39,6 +39,19 @@
   (d/transact db-conn
               [[:db/retractEntity [:purchase/name name]]]))
 
+(def get-queue d/tx-report-queue)
+
+(def remove-queue d/remove-tx-report-queue)
+
+(defn read-changes [{:keys [db-after tx-data]}]
+  (d/q '[:find ?aname ?v ?added?
+         :in $ [[_ ?a ?v _ ?added?]]
+         :where
+         [?a :db/ident ?aname]
+         (not [?a :db/ident :db/txInstant])]
+       db-after
+       tx-data))
+
 (comment
   ;; check if schema is present
   (d/q '[:find ?e
