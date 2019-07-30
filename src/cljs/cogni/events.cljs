@@ -1,6 +1,7 @@
 (ns cogni.events
   (:require [re-frame.core :as rf]
             [ajax.edn :as ajax]
+            [cljs.pprint :refer [pprint]]
             [day8.re-frame.http-fx]
             [wscljs.client :as ws]
             [wscljs.format :as fmt]))
@@ -26,7 +27,7 @@
                                        :on-message (fn [e]
                                                      (let [data (cljs.reader/read-string (.-data e))]
                                                        (println "Message from server:")
-                                                       (cljs.pprint/pprint data)
+                                                       (pprint data)
                                                        (handle-server-event data)))}))
                    {}))
 
