@@ -4,14 +4,16 @@
             [cljs.pprint :refer [pprint]]
             [day8.re-frame.http-fx]
             [wscljs.client :as ws]
-            [wscljs.format :as fmt]))
+            [wscljs.format :as fmt]
+            [cljs-time.coerce :as c]))
 
 (defonce ws-connection (atom nil))
 
 (defn handle-server-event [{:keys [current-state event data]}]
   (cond
     (some? current-state) (case current-state
-                            :purchases (rf/dispatch [::purchases-loaded data]))
+                            :purchases (rf/dispatch [::purchases-loaded data])
+                            :history (rf/dispatch [::history-loaded data]))
     (some? event) (case event
                     :purchase-added (rf/dispatch [::purchase-added (:name data)])
                     :purchase-retracted (rf/dispatch [::purchase-retracted (:name data)]))
@@ -38,6 +40,7 @@
 (rf/reg-event-db ::initialize-db
                  (fn [_ _]
                    {:purchases []
+                    :history []
                     :new-purchase ""
                     :loading? true
                     :loading-error nil
@@ -48,6 +51,13 @@
                    (-> db
                        (assoc :purchases (mapv :name purchases))
                        (assoc :loading? false))))
+
+(rf/reg-event-db ::history-loaded
+                 (fn [db [_ history]]
+                   (assoc db
+                          :history
+                          (map #(update % :when c/from-date)
+                               history))))
 
 (rf/reg-event-db ::change-new-purchase
                  (fn [db [_ new-purchase]]

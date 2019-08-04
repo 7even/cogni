@@ -3,7 +3,8 @@
  :dependencies [[re-frame "0.10.6"]
                 [day8.re-frame/http-fx "0.1.6"]
                 [cider/cider-nrepl "0.17.0"]
-                [nilenso/wscljs "0.2.0"]]
+                [nilenso/wscljs "0.2.0"]
+                [com.andrewmcveigh/cljs-time "0.5.2"]]
  :builds {:dev {:target :browser
                 :modules {:main {:init-fn cogni.core/init}}
                 :devtools {:http-root "public"

@@ -39,15 +39,15 @@
   (d/transact db-conn
               [[:db/retractEntity [:purchase/name name]]]))
 
-(defn get-history [db-conn]
-  (let [hdb (d/history (d/db db-conn))
+(defn get-history [db]
+  (let [hdb (d/history db)
         result (d/q '[:find ?tx ?when
                       :where
                       [_ :purchase/name _ ?tx]
                       [?tx :db/txInstant ?when]]
                     hdb)]
     (->> result
-         sort
+         (sort-by first >)
          (map (fn [[tx when]]
                 [(d/tx->t tx) when])))))
 

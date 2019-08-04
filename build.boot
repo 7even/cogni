@@ -22,7 +22,8 @@
                           [thheller/shadow-cljs "2.8.37"]
                           [re-frame "0.10.6"]
                           [day8.re-frame/http-fx "0.1.6"]
-                          [nilenso/wscljs "0.2.0"]])
+                          [nilenso/wscljs "0.2.0"]
+                          [com.andrewmcveigh/cljs-time "0.5.2"]])
 
 (require '[shadow.cljs.devtools.api :as shadow])
 

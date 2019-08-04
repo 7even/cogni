@@ -19,6 +19,12 @@
                                    {:name name
                                     :added-at added-at}))
                             (sort-by :added-at))})
+    (send-to-ws send-ch
+                {:current-state :history
+                 :data (->> (db/get-history (d/db db-conn))
+                            (map (fn [[t when]]
+                                   {:t t
+                                    :when when})))})
     (swap! ws-clients assoc ws-session send-ch)))
 
 (defn send-message-to-all! [message]
