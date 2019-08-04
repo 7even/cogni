@@ -2,7 +2,8 @@
   (:require [reagent.core :as ra]
             [re-frame.core :as rf]
             [cogni.events :as events]
-            [cogni.subs :as subs]))
+            [cogni.subs :as subs]
+            [cljs-time.format :as f]))
 
 (defn- grid-row [contents]
   [:div.row
@@ -47,6 +48,18 @@
      (when (some? duplication-error)
        [:div {:style {:color "red"}} duplication-error])]))
 
+(defn history-item-row [{:keys [t when]}]
+  [:li.list-group-item
+   (f/unparse (f/formatters :mysql) when)])
+
+(defn history []
+  (let [items @(rf/subscribe [::subs/history])]
+    [:div {:style {:margin-top "20px"}}
+     (grid-row [:h5 "Changes history"])
+     (grid-row [:ul.list-group
+                (for [item (take 20 items)]
+                  ^{:key (:t item)} [history-item-row item])])]))
+
 (defn ui []
   (let [loading? @(rf/subscribe [::subs/loading?])
         loading-error @(rf/subscribe [::subs/loading-error])]
@@ -54,4 +67,5 @@
      (cond
        loading?              (grid-row [:i "Loading..."])
        (some? loading-error) (grid-row [:i {:style {:color "red"}} loading-error])
-       :else                 (purchases-list))]))
+       :else                 (purchases-list))
+     (history)]))

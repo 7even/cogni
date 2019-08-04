@@ -6,6 +6,10 @@
             (fn [db]
               (:purchases db)))
 
+(rf/reg-sub ::history
+            (fn [db]
+              (:history db)))
+
 (rf/reg-sub ::new-purchase
             (fn [db]
               (:new-purchase db)))
