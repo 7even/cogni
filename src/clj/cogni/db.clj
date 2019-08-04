@@ -39,6 +39,18 @@
   (d/transact db-conn
               [[:db/retractEntity [:purchase/name name]]]))
 
+(defn get-history [db-conn]
+  (let [hdb (d/history (d/db db-conn))
+        result (d/q '[:find ?tx ?when
+                      :where
+                      [_ :purchase/name _ ?tx]
+                      [?tx :db/txInstant ?when]]
+                    hdb)]
+    (->> result
+         sort
+         (map (fn [[tx when]]
+                [(d/tx->t tx) when])))))
+
 (def get-queue d/tx-report-queue)
 
 (def remove-queue d/remove-tx-report-queue)
