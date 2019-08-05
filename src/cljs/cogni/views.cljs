@@ -67,5 +67,6 @@
      (cond
        loading?              (grid-row [:i "Loading..."])
        (some? loading-error) (grid-row [:i {:style {:color "red"}} loading-error])
-       :else                 (purchases-list))
-     (history)]))
+       :else                 [:div
+                              (purchases-list)
+                              (history)])]))

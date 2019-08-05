@@ -7,13 +7,16 @@
   (thread
     (while @enabled
       (let [report (.take queue)
-            changes (db/read-changes report)]
-        (doseq [[_ name added?] changes]
-          (ws/broadcast (if added?
-                          {:event :purchase-added
-                           :data {:name name}}
-                          {:event :purchase-retracted
-                           :data {:name name}})))))))
+            {:keys [t changes]} (db/read-changes report)
+            when (->> (:tx-data report)
+                      (filter (fn [[e a v tx]]
+                                (= e tx)))
+                      (map #(nth % 2))
+                      first)]
+        (ws/broadcast {:type :transaction
+                       :data {:t t
+                              :when when
+                              :changes changes}})))))
 
 (defn start-watcher [db-conn]
   (let [enabled (atom true)

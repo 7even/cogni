@@ -56,13 +56,15 @@
 (def remove-queue d/remove-tx-report-queue)
 
 (defn read-changes [{:keys [db-after tx-data]}]
-  (d/q '[:find ?aname ?v ?added?
-         :in $ [[_ ?a ?v _ ?added?]]
-         :where
-         [?a :db/ident ?aname]
-         (not [?a :db/ident :db/txInstant])]
-       db-after
-       tx-data))
+  (let [t (d/basis-t db-after)
+        changes (d/q '[:find ?aname ?v ?added?
+                       :in $ [[_ ?a ?v _ ?added?]]
+                       :where
+                       [?a :db/ident ?aname]
+                       (not [?a :db/ident :db/txInstant])]
+                     db-after
+                     tx-data)]
+    {:t t :changes changes}))
 
 (comment
   ;; check if schema is present

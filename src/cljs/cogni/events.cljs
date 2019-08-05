@@ -9,15 +9,11 @@
 
 (defonce ws-connection (atom nil))
 
-(defn handle-server-event [{:keys [current-state event data]}]
-  (cond
-    (some? current-state) (case current-state
-                            :purchases (rf/dispatch [::purchases-loaded data])
-                            :history (rf/dispatch [::history-loaded data]))
-    (some? event) (case event
-                    :purchase-added (rf/dispatch [::purchase-added (:name data)])
-                    :purchase-retracted (rf/dispatch [::purchase-retracted (:name data)]))
-    :else (println "Server sent something wrong.")))
+(defn handle-server-message [{:keys [type data]}]
+  (case type
+    :state (rf/dispatch [::state-loaded data])
+    :transaction (rf/dispatch [::new-transaction data])
+    (println "Server sent a message with unexpected type:" type)))
 
 (rf/reg-event-fx ::initialize-ws
                  (fn [_ _]
@@ -30,7 +26,7 @@
                                                      (let [data (cljs.reader/read-string (.-data e))]
                                                        (println "Message from server:")
                                                        (pprint data)
-                                                       (handle-server-event data)))}))
+                                                       (handle-server-message data)))}))
                    {}))
 
 (rf/reg-fx :send-to-ws
@@ -46,18 +42,29 @@
                     :loading-error nil
                     :duplication-error nil}))
 
-(rf/reg-event-db ::purchases-loaded
-                 (fn [db [_ purchases]]
+(rf/reg-event-db ::state-loaded
+                 (fn [db [_ {:keys [purchases history]}]]
                    (-> db
                        (assoc :purchases (mapv :name purchases))
+                       (assoc :history (map #(update % :when c/from-date)
+                                            history))
                        (assoc :loading? false))))
 
-(rf/reg-event-db ::history-loaded
-                 (fn [db [_ history]]
-                   (assoc db
-                          :history
-                          (map #(update % :when c/from-date)
-                               history))))
+(defn- handle-change [db [_ name added?]]
+  (if added?
+    (cond-> db
+      true (update :purchases conj name)
+      (= name (:new-purchase db)) (assoc :new-purchase ""))
+    (update db :purchases (fn [purchases]
+                            (->> purchases
+                                 (remove (partial = name))
+                                 vec)))))
+
+(rf/reg-event-db ::new-transaction
+                 (fn [db [_ {:keys [t when changes]}]]
+                   (-> (reduce handle-change db changes)
+                       (update :history conj {:t t
+                                              :when (c/from-date when)}))))
 
 (rf/reg-event-db ::change-new-purchase
                  (fn [db [_ new-purchase]]
@@ -68,20 +75,7 @@
                    {:send-to-ws {:event :add-purchase
                                  :data {:name (:new-purchase db)}}}))
 
-(rf/reg-event-db ::purchase-added
-                 (fn [db [_ added-purchase]]
-                   (cond-> db
-                     true (update :purchases conj added-purchase)
-                     (= added-purchase (:new-purchase db)) (assoc :new-purchase ""))))
-
 (rf/reg-event-fx ::retract-purchase
                  (fn [{db :db} [_ purchase-name]]
                    {:send-to-ws {:event :retract-purchase
                                  :data {:name purchase-name}}}))
-
-(rf/reg-event-db ::purchase-retracted
-                 (fn [db [_ deleted-purchase]]
-                   (update db :purchases (fn [purchases]
-                                           (->> purchases
-                                                (remove (partial = deleted-purchase))
-                                                vec)))))
