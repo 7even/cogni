@@ -28,7 +28,8 @@
 (defn send-message-to-all! [message]
   (doseq [[^Session session channel] @ws-clients]
     (when (.isOpen session)
-      (send-to-ws channel {:text message}))))
+      (send-to-ws channel {:type :alert
+                           :data message}))))
 
 (defn broadcast [payload]
   (doseq [[^Session session channel] @ws-clients]

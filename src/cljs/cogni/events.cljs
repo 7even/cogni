@@ -13,6 +13,7 @@
   (case type
     :state (rf/dispatch [::state-loaded data])
     :transaction (rf/dispatch [::new-transaction data])
+    :alert (js/alert data)
     (println "Server sent a message with unexpected type:" type)))
 
 (rf/reg-event-fx ::initialize-ws
