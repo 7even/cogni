@@ -7,7 +7,7 @@
 
 (defn- grid-row [contents]
   [:div.row
-   [:div.col-3
+   [:div.col
     contents]])
 
 (defn purchase-row [purchase]
@@ -37,8 +37,8 @@
 (defn purchases-list []
   (let [purchases @(rf/subscribe [::subs/purchases])
         duplication-error @(rf/subscribe [::subs/duplication-error])]
-    [:div
-     (grid-row [:h2 {:style {:margin-top "10px"}} "Purchases"])
+    [:div.col-sm-auto
+     (grid-row [:h3 {:style {:margin-top "10px"}} "Purchases"])
      (grid-row [:ul.list-group
                 (for [purchase purchases]
                   ^{:key purchase} [purchase-row purchase])])
@@ -54,8 +54,8 @@
 
 (defn history []
   (let [items @(rf/subscribe [::subs/history])]
-    [:div {:style {:margin-top "20px"}}
-     (grid-row [:h5 "Changes history"])
+    [:div.col-sm-auto
+     (grid-row [:h3 {:style {:margin-top "10px"}} "Changes history"])
      (grid-row [:ul.list-group
                 (for [item (take 20 items)]
                   ^{:key (:t item)} [history-item-row item])])]))
@@ -67,6 +67,6 @@
      (cond
        loading?              (grid-row [:i "Loading..."])
        (some? loading-error) (grid-row [:i {:style {:color "red"}} loading-error])
-       :else                 [:div
+       :else                 [:div.row
                               (purchases-list)
                               (history)])]))
