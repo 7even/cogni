@@ -73,10 +73,15 @@
 
 (rf/reg-event-fx ::add-purchase
                  (fn [{db :db} _]
-                   {:send-to-ws {:event :add-purchase
+                   {:send-to-ws {:command :add-purchase
                                  :data {:name (:new-purchase db)}}}))
 
 (rf/reg-event-fx ::retract-purchase
                  (fn [{db :db} [_ purchase-name]]
-                   {:send-to-ws {:event :retract-purchase
+                   {:send-to-ws {:command :retract-purchase
                                  :data {:name purchase-name}}}))
+
+(rf/reg-event-fx ::get-snapshot
+                 (fn [{db :db} [_ t]]
+                   {:send-to-ws {:query :snapshot
+                                 :data {:t t}}}))

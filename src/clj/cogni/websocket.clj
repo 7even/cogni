@@ -36,17 +36,22 @@
     (when (.isOpen session)
       (send-to-ws channel payload))))
 
-(defn- handle-client-event [db {:keys [event data]}]
-  (case event
-    :add-purchase (db/add-purchase db (:name data))
-    :retract-purchase (db/retract-purchase db (:name data))
-    (println "Unknown event" event "with payload" data)))
+(defn- handle-client-message [db {:keys [command query data] :as message}]
+  (cond
+    (some? command) (case command
+                      :add-purchase (db/add-purchase db (:name data))
+                      :retract-purchase (db/retract-purchase db (:name data))
+                      (println "Unknown command" command "with payload" data))
+    (some? query) (case query
+                    :snapshot (println "We have a query!")
+                    (println "Unknown query" query "with payload" data))
+    :else (println "Unknown message" message)))
 
 (defn ws-paths [db]
   {"/ws" {:on-connect (ws/start-ws-connection (new-ws-client db))
           :on-text (fn [payload]
                      (println "Client sent:" payload)
-                     (handle-client-event db (read-string payload)))
+                     (handle-client-message db (read-string payload)))
           :on-binary (fn [payload offset length]
                        (println "Binary Message!")
                        (clojure.pprint/pprint (:bytes payload)))
