@@ -25,7 +25,10 @@
   [:input.form-control {:type :text
                         :value @(rf/subscribe [::subs/new-purchase])
                         :on-change #(rf/dispatch [::events/change-new-purchase
-                                                  (.. % -target -value)])}])
+                                                  (.. % -target -value)])
+                        :on-key-down #(when (and (not @(rf/subscribe [::subs/new-purchase-invalid?]))
+                                                 (= (.-keyCode %) 13))
+                                        (rf/dispatch [::events/add-purchase]))}])
 
 (defn add-purchase-button []
   [:div.input-group-append
