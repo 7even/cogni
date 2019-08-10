@@ -7,6 +7,14 @@
             [wscljs.format :as fmt]
             [cljs-time.coerce :as c]))
 
+(defn- socket-url []
+  (let [page-protocol (.. js/window -location -protocol)
+        socket-protocol (case page-protocol
+                          "http:" "ws:"
+                          "https:" "wss:")
+        host (.. js/window -location -host)]
+    (str socket-protocol "//" host "/ws")))
+
 (defonce ws-connection (atom nil))
 
 (defn handle-server-message [{:keys [type data]}]
@@ -20,7 +28,7 @@
                  (fn [_ _]
                    (println "Initializing WS connection")
                    (reset! ws-connection
-                           (ws/create (str "ws://" (.. js/window -location -host) "/ws")
+                           (ws/create (socket-url)
                                       {:on-open #(println "Connected")
                                        :on-close #(println "Disconnected")
                                        :on-message (fn [e]
