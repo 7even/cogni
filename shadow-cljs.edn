@@ -6,6 +6,7 @@
                 [nilenso/wscljs "0.2.0"]
                 [com.andrewmcveigh/cljs-time "0.5.2"]]
  :builds {:dev {:target :browser
+                :output-dir "resources/public/js"
                 :modules {:main {:init-fn cogni.core/init}}
                 :devtools {:http-root "public"
                            :http-port 8891

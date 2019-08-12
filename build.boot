@@ -15,6 +15,10 @@
                           [io.pedestal/pedestal.jetty "0.5.5"]
                           [hiccup "1.0.5"]
 
+                          ;; Aleph-based HTTP
+                          [compojure "1.6.1"]
+                          [aleph "0.4.6"]
+
                           ;; Datomic
                           [com.datomic/datomic-free "0.9.5697" :exclusions [com.google.guava/guava]]
 
