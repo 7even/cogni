@@ -21,7 +21,7 @@
 (def events-bus
   (bus/event-bus))
 
-(defn- broadcast [topic payload]
+(defn broadcast [topic payload]
   (bus/publish! events-bus topic (pr-str payload)))
 
 (defn- send-to-ws [s payload]

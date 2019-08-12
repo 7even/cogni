@@ -1,7 +1,7 @@
 (ns cogni.broadcaster
   (:require [clojure.core.async :refer [thread]]
             [cogni.db :as db]
-            [cogni.websocket :as ws]))
+            [cogni.http2 :as http]))
 
 (defn- broadcast [queue enabled]
   (thread
@@ -13,10 +13,11 @@
                                 (= e tx)))
                       (map #(nth % 2))
                       first)]
-        (ws/broadcast {:type :transaction
-                       :data {:t t
-                              :when when
-                              :changes changes}})))))
+        (http/broadcast :txes
+                        {:type :transaction
+                         :data {:t t
+                                :when when
+                                :changes changes}})))))
 
 (defn start-watcher [db-conn]
   (let [enabled (atom true)
