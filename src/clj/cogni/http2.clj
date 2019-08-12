@@ -9,6 +9,8 @@
             [manifold.bus :as bus]
             [manifold.deferred :as md]
             [manifold.stream :as s]
+            [ring.middleware.content-type :refer [wrap-content-type]]
+            [ring.middleware.not-modified :refer [wrap-not-modified]]
             [ring.middleware.resource :refer [wrap-resource]]))
 
 (defn show-index [_]
@@ -49,8 +51,10 @@
                      :body "Not found"})))
 
 (defn app [db]
-  (wrap-resource (app-routes db)
-                 "public"))
+  (-> (app-routes db)
+      (wrap-resource "public")
+      wrap-content-type
+      wrap-not-modified))
 
 (defn start [db port join?]
   (let [server (http/start-server (app db) {:port port})]
