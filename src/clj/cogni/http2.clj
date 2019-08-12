@@ -27,6 +27,20 @@
 (defn- send-to-ws [s payload]
   (s/put! s (pr-str payload)))
 
+(defn- handle-client-message [db-conn ws-conn {:keys [command query data] :as message}]
+  (cond
+    (some? command) (case command
+                      :add-purchase (db/add-purchase db-conn (:name data))
+                      :retract-purchase (db/retract-purchase db-conn (:name data))
+                      (println "Unknown command" command "with payload" data))
+    (some? query) (case query
+                    :snapshot (let [db (d/as-of (d/db db-conn)
+                                                (:t data))
+                                    snapshot (db/get-purchases db)]
+                                (send-to-ws ws-conn snapshot))
+                    (println "Unknown query" query "with payload" data))
+    :else (println "Unknown message" message)))
+
 (defn ws-handler [db-conn]
   (fn [req]
     (md/let-flow [conn (http/websocket-connection req)]
@@ -41,7 +55,11 @@
                                :history (->> (db/get-history (d/db db-conn))
                                              (map (fn [[t when]]
                                                     {:t t
-                                                     :when when})))}}))))
+                                                     :when when})))}})
+      (s/consume (fn [payload]
+                   (println "Client sent:" payload)
+                   (handle-client-message db-conn conn (read-string payload)))
+                 conn))))
 
 (defn app-routes [db]
   (routes
