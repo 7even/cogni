@@ -53,9 +53,9 @@
                                                        :added-at added-at}))
                                                (sort-by :added-at))
                                :history (->> (db/get-history (d/db db-conn))
-                                             (map (fn [[t when]]
+                                             (map (fn [[t happened-at]]
                                                     {:t t
-                                                     :when when})))}})
+                                                     :happened-at happened-at})))}})
       (s/consume (fn [payload]
                    (println "Client sent:" payload)
                    (handle-client-message db-conn conn (read-string payload)))

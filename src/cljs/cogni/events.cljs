@@ -55,7 +55,7 @@
                  (fn [db [_ {:keys [purchases history]}]]
                    (-> db
                        (assoc :purchases (mapv :name purchases))
-                       (assoc :history (map #(update % :when c/from-date)
+                       (assoc :history (map #(update % :happened-at c/from-date)
                                             history))
                        (assoc :loading? false))))
 
@@ -70,10 +70,10 @@
                                  vec)))))
 
 (rf/reg-event-db ::new-transaction
-                 (fn [db [_ {:keys [t when changes]}]]
+                 (fn [db [_ {:keys [t happened-at changes]}]]
                    (-> (reduce handle-change db changes)
                        (update :history conj {:t t
-                                              :when (c/from-date when)}))))
+                                              :happened-at (c/from-date happened-at)}))))
 
 (rf/reg-event-db ::change-new-purchase
                  (fn [db [_ new-purchase]]

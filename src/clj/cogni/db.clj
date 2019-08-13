@@ -41,15 +41,15 @@
 
 (defn get-history [db]
   (let [hdb (d/history db)
-        result (d/q '[:find ?tx ?when
+        result (d/q '[:find ?tx ?happened-at
                       :where
                       [_ :purchase/name _ ?tx]
-                      [?tx :db/txInstant ?when]]
+                      [?tx :db/txInstant ?happened-at]]
                     hdb)]
     (->> result
          (sort-by first >)
-         (map (fn [[tx when]]
-                [(d/tx->t tx) when])))))
+         (map (fn [[tx happened-at]]
+                [(d/tx->t tx) happened-at])))))
 
 (def get-queue d/tx-report-queue)
 

@@ -51,9 +51,9 @@
      (when (some? duplication-error)
        [:div {:style {:color "red"}} duplication-error])]))
 
-(defn history-item-row [{:keys [t when]}]
+(defn history-item-row [{:keys [t happened-at]}]
   [:li.list-group-item
-   (f/unparse (f/formatters :mysql) when)])
+   (f/unparse (f/formatters :mysql) happened-at)])
 
 (defn history []
   (let [items @(rf/subscribe [::subs/history])]

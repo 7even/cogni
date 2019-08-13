@@ -8,15 +8,15 @@
     (while @enabled
       (let [report (.take queue)
             {:keys [t changes]} (db/read-changes report)
-            when (->> (:tx-data report)
-                      (filter (fn [[e a v tx]]
-                                (= e tx)))
-                      (map #(nth % 2))
-                      first)]
+            happened-at (->> (:tx-data report)
+                             (filter (fn [[e a v tx]]
+                                       (= e tx)))
+                             (map #(nth % 2))
+                             first)]
         (http/broadcast :txes
                         {:type :transaction
                          :data {:t t
-                                :when when
+                                :happened-at happened-at
                                 :changes changes}})))))
 
 (defn start-watcher [db-conn]
