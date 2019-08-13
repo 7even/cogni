@@ -107,3 +107,7 @@
                      {:db (assoc db :snapshot-loading? true)
                       :send-to-ws {:query :snapshot
                                    :data {:t t}}})))
+
+(rf/reg-event-db ::switch-to-current
+                 (fn [db]
+                   (assoc db :current-t nil)))

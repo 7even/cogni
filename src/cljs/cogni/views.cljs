@@ -60,16 +60,19 @@
        [:div {:style {:color "red"}} duplication-error])]))
 
 (defn history-item-row [{:keys [t happened-at]}]
-  [:a.list-group-item.list-group-item-action
-   {:href "#"
-    :class (cs (when (= t @(rf/subscribe [::subs/current-t]))
-                 "active")
-               (when @(rf/subscribe [::subs/snapshot-loading?])
-                 "disabled"))
-    :on-click (fn [e]
-                (.preventDefault e)
-                (rf/dispatch [::events/switch-to-snapshot t]))}
-   (f/unparse (f/formatters :mysql) happened-at)])
+  (let [active? (= t @(rf/subscribe [::subs/current-t]))]
+    [:a.list-group-item.list-group-item-action
+     {:href "#"
+      :class (cs (when active?
+                   "active")
+                 (when @(rf/subscribe [::subs/snapshot-loading?])
+                   "disabled"))
+      :on-click (fn [e]
+                  (.preventDefault e)
+                  (if active?
+                    (rf/dispatch [::events/switch-to-current])
+                    (rf/dispatch [::events/switch-to-snapshot t])))}
+     (f/unparse (f/formatters :mysql) happened-at)]))
 
 (defn history []
   (let [items @(rf/subscribe [::subs/history])]
