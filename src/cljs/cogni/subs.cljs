@@ -22,6 +22,10 @@
             (fn [db]
               (some? (:current-t db))))
 
+(rf/reg-sub ::snapshot-loading?
+            (fn [db]
+              (:snapshot-loading? db)))
+
 (rf/reg-sub ::current-snapshot
             (fn []
               [(rf/subscribe [::current-t])

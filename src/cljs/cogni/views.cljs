@@ -3,7 +3,11 @@
             [re-frame.core :as rf]
             [cogni.events :as events]
             [cogni.subs :as subs]
-            [cljs-time.format :as f]))
+            [cljs-time.format :as f]
+            [clojure.string :as str]))
+
+(defn- cs [& names]
+  (str/join " " (filter identity names)))
 
 (defn- grid-row [contents]
   [:div.row
@@ -56,16 +60,22 @@
        [:div {:style {:color "red"}} duplication-error])]))
 
 (defn history-item-row [{:keys [t happened-at]}]
-  [:li.list-group-item
-   {:class (when (= t @(rf/subscribe [::subs/current-t]))
-             "active")}
+  [:a.list-group-item.list-group-item-action
+   {:href "#"
+    :class (cs (when (= t @(rf/subscribe [::subs/current-t]))
+                 "active")
+               (when @(rf/subscribe [::subs/snapshot-loading?])
+                 "disabled"))
+    :on-click (fn [e]
+                (.preventDefault e)
+                (rf/dispatch [::events/switch-to-snapshot t]))}
    (f/unparse (f/formatters :mysql) happened-at)])
 
 (defn history []
   (let [items @(rf/subscribe [::subs/history])]
     [:div.col-sm-auto
      (grid-row [:h3 {:style {:margin-top "10px"}} "Changes history"])
-     (grid-row [:ul.list-group
+     (grid-row [:div.list-group
                 (for [item (take 20 items)]
                   ^{:key (:t item)} [history-item-row item])])]))
 
