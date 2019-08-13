@@ -10,13 +10,24 @@
             (fn [db]
               (:history db)))
 
-(rf/reg-sub ::t
+(rf/reg-sub ::current-t
             (fn [db]
               (:current-t db)))
+
+(rf/reg-sub ::snapshots
+            (fn [db]
+              (:snapshots db)))
 
 (rf/reg-sub ::viewing-snapshot?
             (fn [db]
               (some? (:current-t db))))
+
+(rf/reg-sub ::current-snapshot
+            (fn []
+              [(rf/subscribe [::current-t])
+               (rf/subscribe [::snapshots])])
+            (fn [[current-t snapshots]]
+              (get snapshots current-t)))
 
 (rf/reg-sub ::new-purchase
             (fn [db]

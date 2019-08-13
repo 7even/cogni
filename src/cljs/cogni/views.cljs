@@ -40,7 +40,9 @@
     "Add"]])
 
 (defn purchases-list []
-  (let [purchases @(rf/subscribe [::subs/purchases])
+  (let [purchases (if @(rf/subscribe [::subs/viewing-snapshot?])
+                    (mapv :name @(rf/subscribe [::subs/current-snapshot]))
+                    @(rf/subscribe [::subs/purchases]))
         duplication-error @(rf/subscribe [::subs/duplication-error])]
     [:div.col-sm-auto
      (grid-row [:h3 {:style {:margin-top "10px"}} "Purchases"])
@@ -55,7 +57,7 @@
 
 (defn history-item-row [{:keys [t happened-at]}]
   [:li.list-group-item
-   {:class (when (= t @(rf/subscribe [::subs/t]))
+   {:class (when (= t @(rf/subscribe [::subs/current-t]))
              "active")}
    (f/unparse (f/formatters :mysql) happened-at)])
 
