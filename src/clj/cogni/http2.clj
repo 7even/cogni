@@ -49,15 +49,8 @@
       (s/connect (bus/subscribe events-bus :txes)
                  conn)
       (send-to-ws conn {:type :state
-                        :data {:purchases (->> (db/get-purchases (d/db db-conn))
-                                               (map (fn [[name added-at]]
-                                                      {:name name
-                                                       :added-at added-at}))
-                                               (sort-by :added-at))
-                               :history (->> (db/get-history (d/db db-conn))
-                                             (map (fn [[t happened-at]]
-                                                    {:t t
-                                                     :happened-at happened-at})))}})
+                        :data {:purchases (db/get-purchases (d/db db-conn))
+                               :history (db/get-history (d/db db-conn))}})
       (s/consume (fn [payload]
                    (println "Client sent:" payload)
                    (handle-client-message db-conn conn (read-string payload)))

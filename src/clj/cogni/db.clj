@@ -25,11 +25,15 @@
                 (assoc-in [:request ::value] (d/db db-conn))))})
 
 (defn get-purchases [db]
-  (d/q '[:find ?name ?added-at
-         :where
-         [?e :purchase/name ?name ?tx]
-         [?tx :db/txInstant ?added-at]]
-       db))
+  (->> (d/q '[:find ?name ?added-at
+              :where
+              [?e :purchase/name ?name ?tx]
+              [?tx :db/txInstant ?added-at]]
+            db)
+       (map (fn [[name added-at]]
+              {:name name
+               :added-at added-at}))
+       (sort-by :added-at)))
 
 (defn add-purchase [db-conn name]
   (d/transact db-conn
@@ -49,7 +53,8 @@
     (->> result
          (sort-by first >)
          (map (fn [[tx happened-at]]
-                [(d/tx->t tx) happened-at])))))
+                {:t (d/tx->t tx)
+                 :happened-at happened-at})))))
 
 (def get-queue d/tx-report-queue)
 
