@@ -12,11 +12,11 @@
 
 (rf/reg-sub ::t
             (fn [db]
-              (:t db)))
+              (:current-t db)))
 
 (rf/reg-sub ::viewing-snapshot?
             (fn [db]
-              (some? (:t db))))
+              (some? (:current-t db))))
 
 (rf/reg-sub ::new-purchase
             (fn [db]

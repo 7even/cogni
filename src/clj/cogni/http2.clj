@@ -36,8 +36,10 @@
     (some? query) (case query
                     :snapshot (let [db (d/as-of (d/db db-conn)
                                                 (:t data))
-                                    snapshot (db/get-purchases db)]
-                                (send-to-ws ws-conn snapshot))
+                                    purchases (db/get-purchases db)]
+                                (send-to-ws ws-conn {:type :snapshot
+                                                     :data {:t (:t data)
+                                                            :purchases purchases}}))
                     (println "Unknown query" query "with payload" data))
     :else (println "Unknown message" message)))
 

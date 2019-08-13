@@ -7,6 +7,18 @@
             [wscljs.format :as fmt]
             [cljs-time.coerce :as c]))
 
+(rf/reg-event-db ::initialize-db
+                 (fn [_ _]
+                   {:purchases []
+                    :history []
+                    :current-t nil
+                    :snapshots {}
+                    :new-purchase ""
+                    :loading? true
+                    :loading-error nil
+                    :duplication-error nil
+                    :snapshot-loading? false}))
+
 (defn- socket-url []
   (let [page-protocol (.. js/window -location -protocol)
         socket-protocol (case page-protocol
@@ -21,6 +33,7 @@
   (case type
     :state (rf/dispatch [::state-loaded data])
     :transaction (rf/dispatch [::new-transaction data])
+    :snapshot (rf/dispatch [::snapshot-loaded data])
     :alert (js/alert data)
     (println "Server sent a message with unexpected type:" type)))
 
@@ -41,16 +54,6 @@
 (rf/reg-fx :send-to-ws
            (fn [payload]
              (ws/send @ws-connection payload fmt/edn)))
-
-(rf/reg-event-db ::initialize-db
-                 (fn [_ _]
-                   {:purchases []
-                    :history []
-                    :t nil
-                    :new-purchase ""
-                    :loading? true
-                    :loading-error nil
-                    :duplication-error nil}))
 
 (rf/reg-event-db ::state-loaded
                  (fn [db [_ {:keys [purchases history]}]]
@@ -76,6 +79,13 @@
                        (update :history conj {:t t
                                               :happened-at (c/from-date happened-at)}))))
 
+(rf/reg-event-db ::snapshot-loaded
+                 (fn [db [_ {:keys [t purchases]}]]
+                   (-> db
+                       (assoc-in [:snapshots t] purchases)
+                       (assoc :current-t t)
+                       (assoc :snapshot-loading? false))))
+
 (rf/reg-event-db ::change-new-purchase
                  (fn [db [_ new-purchase]]
                    (assoc db :new-purchase new-purchase)))
@@ -90,7 +100,10 @@
                    {:send-to-ws {:command :retract-purchase
                                  :data {:name purchase-name}}}))
 
-(rf/reg-event-fx ::get-snapshot
+(rf/reg-event-fx ::switch-to-snapshot
                  (fn [{db :db} [_ t]]
-                   {:send-to-ws {:query :snapshot
-                                 :data {:t t}}}))
+                   (if (contains? (:snapshots db) t)
+                     {:db (assoc db :current-t t)}
+                     {:db (assoc db :snapshot-loading? true)
+                      :send-to-ws {:query :snapshot
+                                   :data {:t t}}})))
