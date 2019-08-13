@@ -46,6 +46,7 @@
                  (fn [_ _]
                    {:purchases []
                     :history []
+                    :t nil
                     :new-purchase ""
                     :loading? true
                     :loading-error nil

@@ -17,16 +17,18 @@
     [:li.list-group-item
      purchase
      " "
-     [:button.close {:href "#"
-                     :on-click on-click}
-      [:span "×"]]]))
+     (when-not @(rf/subscribe [::subs/viewing-snapshot?])
+       [:button.close {:href "#"
+                       :on-click on-click}
+        [:span "×"]])]))
 
 (defn new-purchase-input []
   [:input.form-control {:type :text
                         :value @(rf/subscribe [::subs/new-purchase])
+                        :disabled @(rf/subscribe [::subs/viewing-snapshot?])
                         :on-change #(rf/dispatch [::events/change-new-purchase
                                                   (.. % -target -value)])
-                        :on-key-down #(when (and (not @(rf/subscribe [::subs/new-purchase-invalid?]))
+                        :on-key-down #(when (and (not @(rf/subscribe [::subs/cant-add-purchase?]))
                                                  (= (.-keyCode %) 13))
                                         (rf/dispatch [::events/add-purchase]))}])
 
@@ -34,7 +36,7 @@
   [:div.input-group-append
    [:button.btn.btn-primary
     {:on-click #(rf/dispatch [::events/add-purchase])
-     :disabled @(rf/subscribe [::subs/new-purchase-invalid?])}
+     :disabled @(rf/subscribe [::subs/cant-add-purchase?])}
     "Add"]])
 
 (defn purchases-list []
@@ -53,6 +55,8 @@
 
 (defn history-item-row [{:keys [t happened-at]}]
   [:li.list-group-item
+   {:class (when (= t @(rf/subscribe [::subs/t]))
+             "active")}
    (f/unparse (f/formatters :mysql) happened-at)])
 
 (defn history []

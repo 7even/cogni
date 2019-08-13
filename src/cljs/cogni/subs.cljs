@@ -10,6 +10,14 @@
             (fn [db]
               (:history db)))
 
+(rf/reg-sub ::t
+            (fn [db]
+              (:t db)))
+
+(rf/reg-sub ::viewing-snapshot?
+            (fn [db]
+              (some? (:t db))))
+
 (rf/reg-sub ::new-purchase
             (fn [db]
               (:new-purchase db)))
@@ -30,10 +38,12 @@
               (when (seq (filter #(= new-purchase %) purchases))
                 "This purchase is already on the list")))
 
-(rf/reg-sub ::new-purchase-invalid?
+(rf/reg-sub ::cant-add-purchase?
             (fn []
               [(rf/subscribe [::duplication-error])
-               (rf/subscribe [::new-purchase])])
-            (fn [[duplication-error new-purchase]]
+               (rf/subscribe [::new-purchase])
+               (rf/subscribe [::viewing-snapshot?])])
+            (fn [[duplication-error new-purchase viewing-snapshot?]]
               (or (some? duplication-error)
-                  (str/blank? new-purchase))))
+                  (str/blank? new-purchase)
+                  viewing-snapshot?)))
