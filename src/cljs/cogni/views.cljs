@@ -3,6 +3,7 @@
             [re-frame.core :as rf]
             [cogni.events :as events]
             [cogni.subs :as subs]
+            [cljs-time.core :as t]
             [cljs-time.format :as f]
             [clojure.string :as str]))
 
@@ -72,7 +73,8 @@
                   (if active?
                     (rf/dispatch [::events/switch-to-current])
                     (rf/dispatch [::events/switch-to-snapshot t])))}
-     (f/unparse (f/formatters :mysql) happened-at)]))
+     (f/unparse (f/formatters :mysql)
+                (t/to-default-time-zone happened-at))]))
 
 (defn history []
   (let [items @(rf/subscribe [::subs/history])]
