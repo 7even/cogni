@@ -1,71 +1,79 @@
 (ns cogni.http
-  (:require [clojure.string :as str]
+  (:require [aleph.http :as http]
+            [aleph.netty :refer [wait-for-close]]
             [cogni.db :as db]
             [cogni.html :as html]
-            [cogni.websocket :as websocket]
-            [io.pedestal.http :as http]
-            [io.pedestal.http.body-params :refer [body-params]]
-            [io.pedestal.http.jetty.websockets :as ws]
-            [io.pedestal.http.route :as route]))
+            [compojure.core :refer [GET routes]]
+            [compojure.route :as route]
+            [datomic.api :as d]
+            [manifold.bus :as bus]
+            [manifold.deferred :as md]
+            [manifold.stream :as s]
+            [ring.middleware.content-type :refer [wrap-content-type]]
+            [ring.middleware.not-modified :refer [wrap-not-modified]]
+            [ring.middleware.resource :refer [wrap-resource]]))
 
 (defn show-index [_]
   {:status 200
    :headers {"Content-Type" "text/html"}
    :body html/page})
 
-(defn list-purchases [{:keys [::db/value]}]
-  (->> (db/get-purchases value)
-       (map (fn [[name added-at]]
-              {:name name
-               :added-at added-at}))
-       (sort-by :added-at)
-       http/edn-response))
+(def events-bus
+  (bus/event-bus))
 
-(defn add-purchase [{:keys [::db/conn]
-                     {:keys [name]} :edn-params}]
-  (db/add-purchase conn name)
-  {:status 201})
+(defn broadcast [topic payload]
+  (bus/publish! events-bus topic (pr-str payload)))
 
-(defn retract-purchase [{:keys [::db/conn]
-                         {:keys [name]} :path-params}]
-  (db/retract-purchase conn name)
-  {:status 204})
+(defn- send-to-ws [s payload]
+  (s/put! s (pr-str payload)))
 
-(defn add-interceptors [db & interceptors]
-  (vec (concat [route/path-params-decoder
-                (body-params)
-                (db/attach-database db)]
-               interceptors)))
+(defn- handle-client-message [db-conn ws-conn {:keys [command query data] :as message}]
+  (cond
+    (some? command) (case command
+                      :add-purchase (db/add-purchase db-conn (:name data))
+                      :retract-purchase (db/retract-purchase db-conn (:name data))
+                      (println "Unknown command" command "with payload" data))
+    (some? query) (case query
+                    :snapshot (let [db (d/as-of (d/db db-conn)
+                                                (:t data))
+                                    purchases (db/get-purchases db)]
+                                (send-to-ws ws-conn {:type :snapshot
+                                                     :data {:t (:t data)
+                                                            :purchases purchases}}))
+                    (println "Unknown query" query "with payload" data))
+    :else (println "Unknown message" message)))
 
-(defn routes [db]
-  (route/expand-routes
-   #{["/" :get show-index :route-name :index]
-     ["/purchases" :get (add-interceptors db list-purchases) :route-name :purchases]
-     ["/purchases" :post (add-interceptors db add-purchase) :route-name :add-purchase]
-     ["/purchases/:name" :delete (add-interceptors db retract-purchase) :route-name :retract-purchase]}))
+(defn ws-handler [db-conn]
+  (fn [req]
+    (md/let-flow [conn (http/websocket-connection req)]
+      (s/connect (bus/subscribe events-bus :txes)
+                 conn)
+      (send-to-ws conn {:type :state
+                        :data {:purchases (db/get-purchases (d/db db-conn))
+                               :history (db/get-history (d/db db-conn))}})
+      (s/consume (fn [payload]
+                   (println "Client sent:" payload)
+                   (handle-client-message db-conn conn (read-string payload)))
+                 conn))))
 
-(def log-request
-  "Log the request's method and uri."
-  {:name ::log-request
-   :enter (fn [request]
-            (println (format "%s %s"
-                             (str/upper-case (name (get-in request [:request :request-method])))
-                             (get-in request [:request :uri])))
-            request)})
+(defn app-routes [db]
+  (routes
+   (GET "/" [] show-index)
+   (GET "/ws" [] (ws-handler db))
+   (route/not-found {:status 404
+                     :body "Not found"})))
 
-(defn start [db public-host port join?]
-  (-> {::http/routes (routes db)
-       ::http/host "0.0.0.0"
-       ::http/port port
-       ::http/allowed-origins [(str "http://" public-host)]
-       ::http/file-path "public"
-       ;; ::http/request-logger log-request
-       ::http/secure-headers nil
-       ::http/join? join?
-       ::http/type :jetty
-       ::http/container-options {:context-configurator
-                                 #(ws/add-ws-endpoints % (websocket/ws-paths db))}}
-      http/create-server
-      http/start))
+(defn app [db]
+  (-> (app-routes db)
+      (wrap-resource "public")
+      wrap-content-type
+      wrap-not-modified))
 
-(def stop http/stop)
+(defn start [db port join?]
+  (let [server (http/start-server (app db) {:port port})]
+    (when join?
+      (wait-for-close server))
+    server))
+
+(defn stop [server]
+  (.close server))

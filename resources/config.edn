@@ -2,8 +2,6 @@
                                         "datomic:free://localhost:4334/cogni?password=datomic"]}
              :events/broadcaster {:db #ig/ref :datomic/client}
              :http/handler {:db #ig/ref :datomic/client
-                            :public-host #or [#env PUBLIC_HOST
-                                              "localhost:8890"]
                             :port 8890
                             :join? #profile {:development false
                                              :default true}}}}

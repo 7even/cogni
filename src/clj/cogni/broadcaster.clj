@@ -1,7 +1,7 @@
 (ns cogni.broadcaster
   (:require [clojure.core.async :refer [thread]]
             [cogni.db :as db]
-            [cogni.http2 :as http]))
+            [cogni.http :as http]))
 
 (defn- broadcast [queue enabled]
   (thread

@@ -5,7 +5,6 @@
             [cogni.broadcaster :as broadcaster]
             [cogni.db :as db]
             [cogni.http :as http]
-            [cogni.http2 :as http2]
             [integrant.core :as ig]))
 
 (defmethod aero/reader 'ig/ref [_ _ value]
@@ -31,15 +30,13 @@
   (reset! enabled false)
   (broadcaster/stop-watcher db))
 
-(defmethod ig/init-key :http/handler [_ {:keys [db public-host port join?]}]
+(defmethod ig/init-key :http/handler [_ {:keys [db port join?]}]
   (println ";; Starting HTTP handler")
-  #_(http/start db public-host port join?)
-  (http2/start db port join?))
+  (http/start db port join?))
 
 (defmethod ig/halt-key! :http/handler [_ server]
   (println ";; Stopping HTTP handler")
-  #_(http/stop server)
-  (http2/stop server))
+  (http/stop server))
 
 (defn -main []
   (let [system-config (-> (config :production)
