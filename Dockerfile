@@ -3,12 +3,8 @@ FROM clojure:boot
 RUN mkdir /app
 WORKDIR /tmp/build
 
-COPY deploy/nginx.conf /etc/nginx/sites-available/app
-COPY deploy/run.sh /app
-
 RUN curl -sL https://deb.nodesource.com/setup_12.x | bash - && \
-    apt-get -qq install build-essential nodejs nginx && \
-    ln -s /etc/nginx/sites-available/app /etc/nginx/sites-enabled/
+    apt-get -qq install nodejs
 
 COPY . .
 
@@ -23,4 +19,4 @@ RUN npm install && \
 
 WORKDIR /app
 
-CMD ["/bin/bash", "run.sh"]
+CMD ["java", "-jar", "cogni.jar"]
