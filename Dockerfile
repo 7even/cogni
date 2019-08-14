@@ -1,6 +1,6 @@
 FROM clojure:boot
 
-RUN mkdir -p /tmp/build /app/public/js
+RUN mkdir /app
 WORKDIR /tmp/build
 
 COPY deploy/nginx.conf /etc/nginx/sites-available/app
@@ -12,12 +12,14 @@ RUN curl -sL https://deb.nodesource.com/setup_12.x | bash - && \
 
 COPY . .
 
-RUN boot build-clj && \
-    mv ./target/cogni.jar /app && \
-    npm install && \
+RUN npm install && \
     boot build-cljs && \
-    mv ./public/js/main.js /app/public/js && \
-    cd / && rm -rf /tmp/build
+    cd resources/public/js && \
+    find . -type f ! -name 'main.js' -delete && \
+    cd ../../.. && \
+    boot build-clj && \
+    mv ./target/cogni.jar /app && \
+    rm -rf /tmp/build
 
 WORKDIR /app
 
