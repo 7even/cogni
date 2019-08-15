@@ -7,9 +7,6 @@
             [cljs-time.format :as f]
             [clojure.string :as str]))
 
-(defn- cs [& names]
-  (str/join " " (filter identity names)))
-
 (defn- grid-row [contents]
   [:div.row
    [:div.col
@@ -64,10 +61,10 @@
   (let [active? (= t @(rf/subscribe [::subs/current-t]))]
     [:a.list-group-item.list-group-item-action
      {:href "#"
-      :class (cs (when active?
-                   "active")
-                 (when @(rf/subscribe [::subs/snapshot-loading?])
-                   "disabled"))
+      :class [(when active?
+                "active")
+              (when @(rf/subscribe [::subs/snapshot-loading?])
+                "disabled")]
       :on-click (fn [e]
                   (.preventDefault e)
                   (if active?

@@ -19,6 +19,7 @@
 
                           ;; Clojurescript
                           [thheller/shadow-cljs "2.8.37"]
+                          [reagent "0.8.1"]
                           [re-frame "0.10.6"]
                           [day8.re-frame/http-fx "0.1.6"]
                           [nilenso/wscljs "0.2.0"]
