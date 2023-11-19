@@ -46,7 +46,7 @@
                     (mapv :name @(rf/subscribe [::subs/current-snapshot]))
                     @(rf/subscribe [::subs/purchases]))
         duplication-error @(rf/subscribe [::subs/duplication-error])]
-    [:div.col-sm-auto
+    [:div.col-lg-6
      (grid-row [:h3 {:style {:margin-top "10px"}} "Purchases"])
      (grid-row [:ul.list-group
                 (for [purchase purchases]
@@ -75,7 +75,7 @@
 
 (defn history []
   (let [items @(rf/subscribe [::subs/history])]
-    [:div.col-sm-auto
+    [:div.col-lg-6
      (grid-row [:h3 {:style {:margin-top "10px"}} "Changes history"])
      (grid-row [:div.list-group
                 (for [item (take 20 items)]
