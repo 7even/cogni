@@ -3,7 +3,7 @@ FROM clojure:boot
 RUN mkdir /app
 WORKDIR /tmp/build
 
-RUN curl -sL https://deb.nodesource.com/setup_12.x | bash - && \
+RUN curl -sL https://deb.nodesource.com/setup_18.x | bash - && \
     apt-get -qq install nodejs
 
 COPY . .
